@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Пациент — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-receptionist}" th:with="activePage='patients'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1 th:text="${patient.user.fullName}">—</h1>
+                <p>Карточка пациента</p>
+            </div>
+            <a th:href="@{/receptionist/patients}" class="btn btn-ghost">← Назад</a>
+        </div>
+        <div class="content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Личные данные</span></div>
+                    <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Телефон</span>
+                            <span style="font-weight:500;font-size:13px" th:text="${patient.phone ?: '—'}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Email</span>
+                            <span style="font-weight:500;font-size:13px" th:text="${patient.user.email ?: '—'}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Дата рождения</span>
+                            <span style="font-weight:500;font-size:13px"
+                                  th:text="${patient.dateOfBirth != null ? #temporals.format(patient.dateOfBirth,'dd.MM.yyyy') : '—'}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Группа крови</span>
+                            <span th:if="${patient.bloodType}" class="badge badge-cyan" th:text="${patient.bloodType}">—</span>
+                            <span th:unless="${patient.bloodType}" style="font-size:13px">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Аллергии</span>
+                            <span style="font-weight:500;font-size:13px;color:var(--danger)"
+                                  th:text="${patient.allergies ?: 'Нет'}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border)">
+                            <span style="color:var(--text-muted);font-size:13px">Адрес</span>
+                            <span style="font-weight:500;font-size:13px" th:text="${patient.address ?: '—'}">—</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between">
+                            <span style="color:var(--text-muted);font-size:13px">Экстренный контакт</span>
+                            <span style="font-weight:500;font-size:13px"
+                                  th:text="${patient.emergencyContact != null ? patient.emergencyContact + ' · ' + (patient.emergencyPhone ?: '') : '—'}">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Записи на приём (<span th:text="${#lists.size(appointments)}">0</span>)</span>
+                    </div>
+                    <div th:if="${#lists.isEmpty(appointments)}" class="card-body">
+                        <div class="empty-state">
+                            <div class="icon">📅</div>
+                            <h3>Записей нет</h3>
+                        </div>
+                    </div>
+                    <div th:each="a : ${appointments}"
+                         style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <div style="font-weight:500;font-size:14px" th:text="${a.doctor.user.fullName}">—</div>
+                            <div style="font-size:12px;color:var(--text-muted)" th:text="${a.doctor.specialization}">—</div>
+                            <div style="margin-top:4px">
+                                <span class="time-chip" th:text="${#temporals.format(a.appointmentTime,'dd.MM.yyyy HH:mm')}">—</span>
+                            </div>
+                        </div>
+                        <span th:switch="${a.status.name()}">
+                            <span th:case="'SCHEDULED'" class="badge badge-blue">Запланирован</span>
+                            <span th:case="'COMPLETED'" class="badge badge-green">Завершён</span>
+                            <span th:case="'CANCELLED'" class="badge badge-red">Отменён</span>
+                            <span th:case="*"           class="badge badge-gray" th:text="${a.status}">—</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
