@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мед. карта — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-patient}" th:with="activePage='records',cartCount=${0}"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Медицинская карта</h1><p>История болезней и назначений</p></div>
+        </div>
+        <div class="content">
+            <div th:if="${#lists.isEmpty(records)}">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <h3>Медицинская карта пуста</h3>
+                    <p>Записи появятся после завершения приёма у врача</p>
+                </div>
+            </div>
+            <div th:each="r : ${records}" class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <div>
+                        <div style="font-weight:600" th:text="${r.doctor.user.fullName}">—</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px"
+                             th:text="${r.doctor.specialization}">—</div>
+                    </div>
+                    <span class="time-chip"
+                          th:text="${#temporals.format(r.recordDate,'dd.MM.yyyy HH:mm')}">—</span>
+                </div>
+                <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px">Диагноз</div>
+                        <div style="font-weight:500" th:text="${r.diagnosis != null ? r.diagnosis : '—'}">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px">Лечение</div>
+                        <div style="font-weight:500" th:text="${r.treatment != null ? r.treatment : '—'}">—</div>
+                    </div>
+                    <div th:if="${r.prescription != null}" style="grid-column:1/-1">
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px">Рецепт</div>
+                        <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:13px"
+                             th:text="${r.prescription}">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

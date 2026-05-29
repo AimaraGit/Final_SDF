@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .cart-layout { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
+        .cart-item { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+        .cart-item:last-child { border-bottom:none; }
+        .order-summary { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:sticky; top:24px; }
+        .summary-row { display:flex; justify-content:space-between; font-size:14px; padding:8px 0; border-bottom:1px solid var(--border); }
+        .summary-total { display:flex; justify-content:space-between; font-size:20px; font-weight:700; padding-top:16px; border-top:2px solid var(--border); margin-top:8px; }
+        .pay-method { display:flex; flex-direction:column; gap:8px; margin:16px 0; }
+        .pay-option { display:flex; align-items:center; gap:10px; padding:12px; background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:border-color .15s; }
+        .pay-icon { font-size:20px; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-patient}" th:with="activePage='cart',cartCount=${cartCount}"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Корзина</h1><p>Выбранные анализы</p></div>
+            <a th:href="@{/patient/tests}" class="btn btn-ghost">← Каталог</a>
+        </div>
+        <div class="content">
+            <div th:if="${#lists.isEmpty(cartTests)}" class="empty-state" style="margin-top:40px">
+                <div class="icon">🛒</div>
+                <h3>Корзина пуста</h3>
+                <p>Добавьте анализы из каталога</p>
+                <a th:href="@{/patient/tests}" class="btn btn-primary" style="margin-top:16px">
+                    Перейти в каталог
+                </a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(cartTests)}" class="cart-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Анализы (<span th:text="${cartCount}">0</span>)</span>
+                    </div>
+                    <div th:each="t : ${cartTests}" class="cart-item">
+                        <div>
+                            <div style="font-weight:600" th:text="${t.name}">—</div>
+                            <div style="margin-top:4px;display:flex;gap:8px;align-items:center">
+                                <span class="badge badge-cyan" th:text="${t.category}">—</span>
+                                <span style="font-size:12px;color:var(--text-muted)"
+                                      th:text="'Результат через ' + (t.daysToResult != null ? t.daysToResult : 1) + ' дн.'">—</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <span style="font-weight:700;font-family:'JetBrains Mono',monospace"
+                                  th:text="${#numbers.formatDecimal(t.price,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                            <form th:action="@{/patient/tests/cart/remove/{id}(id=${t.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit"
+                                        style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;transition:color .15s"
+                                        onmouseover="this.style.color='var(--danger)'"
+                                        onmouseout="this.style.color='var(--text-muted)'">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div style="font-size:16px;font-weight:700;margin-bottom:16px">Итого к оплате</div>
+                    <div th:each="t : ${cartTests}" class="summary-row">
+                        <span th:text="${t.name}">—</span>
+                        <span th:text="${#numbers.formatDecimal(t.price,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Итого</span>
+                        <span th:text="${#numbers.formatDecimal(total,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                    </div>
+
+                    <form th:action="@{/patient/tests/cart/checkout}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.5px">
+                            Способ оплаты
+                        </div>
+                        <div class="pay-method">
+                            <label class="pay-option">
+                                <input type="radio" name="paymentMethod" value="CARD" checked
+                                       style="accent-color:var(--accent)">
+                                <span class="pay-icon">💳</span>
+                                <span style="font-size:14px;font-weight:500">Банковская карта</span>
+                            </label>
+                            <label class="pay-option">
+                                <input type="radio" name="paymentMethod" value="KASPI"
+                                       style="accent-color:var(--accent)">
+                                <span class="pay-icon">📱</span>
+                                <span style="font-size:14px;font-weight:500">Kaspi Pay</span>
+                            </label>
+                            <label class="pay-option">
+                                <input type="radio" name="paymentMethod" value="CASH"
+                                       style="accent-color:var(--accent)">
+                                <span class="pay-icon">💵</span>
+                                <span style="font-size:14px;font-weight:500">Наличные в кассе</span>
+                            </label>
+                        </div>
+                        <div style="background:var(--accent-soft);border:1px solid rgba(59,130,246,.3);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text-soft);margin-bottom:16px">
+                            🔒 Это тестовая оплата. Реальные деньги не списываются.
+                        </div>
+                        <button type="submit" class="btn btn-primary"
+                                style="width:100%;justify-content:center;padding:14px;font-size:15px">
+                            Оплатить
+                            <span th:text="${#numbers.formatDecimal(total,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

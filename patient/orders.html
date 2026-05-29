@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои заказы — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-patient}" th:with="activePage='orders',cartCount=${cartCount}"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Мои заказы</h1><p>История заказанных анализов</p></div>
+        </div>
+        <div class="content">
+            <div th:if="${success}" class="alert alert-success">✓ <span th:text="${success}"></span></div>
+
+            <div th:if="${#lists.isEmpty(orders)}" class="empty-state" style="margin-top:40px">
+                <div class="icon">📦</div>
+                <h3>Заказов нет</h3>
+                <p>Оформите первый заказ в каталоге анализов</p>
+                <a th:href="@{/patient/tests}" class="btn btn-primary" style="margin-top:16px">
+                    Перейти в каталог
+                </a>
+            </div>
+
+            <div th:each="o : ${orders}" class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <div>
+                        <div style="font-weight:700;font-size:15px">
+                            Заказ #<span th:text="${o.id}">—</span>
+                        </div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px"
+                             th:text="${#temporals.format(o.orderedAt,'dd.MM.yyyy HH:mm')}">—</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace"
+                              th:text="${#numbers.formatDecimal(o.totalAmount,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                        <span th:switch="${o.status.name()}">
+                            <span th:case="'PENDING'"     class="badge badge-orange">Ожидает оплаты</span>
+                            <span th:case="'PAID'"        class="badge badge-blue">Оплачен</span>
+                            <span th:case="'IN_PROGRESS'" class="badge badge-cyan">Выполняется</span>
+                            <span th:case="'COMPLETED'"   class="badge badge-green">Готов</span>
+                            <span th:case="'CANCELLED'"   class="badge badge-red">Отменён</span>
+                            <span th:case="*" class="badge badge-gray" th:text="${o.status}">—</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                        <span th:each="t : ${o.tests}" class="badge badge-gray" th:text="${t.name}">—</span>
+                    </div>
+                    <div th:if="${o.paymentMethod != null}"
+                         style="font-size:12px;color:var(--text-muted)">
+                        Способ оплаты:
+                        <span th:switch="${o.paymentMethod}">
+                            <span th:case="'CARD'">💳 Банковская карта</span>
+                            <span th:case="'KASPI'">📱 Kaspi Pay</span>
+                            <span th:case="'CASH'">💵 Наличные</span>
+                            <span th:case="'DOCTOR_ASSIGNED'">👨‍⚕️ Назначено врачом</span>
+                            <span th:case="*" th:text="${o.paymentMethod}">—</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
