@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои пациенты — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-doctor}" th:with="activePage='patients'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Мои пациенты</h1><p>Пациенты, которые были на приёме</p></div>
+        </div>
+        <div class="content">
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>ФИО</th><th>Дата рождения</th><th>Группа крови</th><th>Аллергии</th><th>Телефон</th><th>Действия</th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="p : ${patients}">
+                            <td><strong th:text="${p.user.fullName}">—</strong></td>
+                            <td th:text="${p.dateOfBirth != null ? #temporals.format(p.dateOfBirth,'dd.MM.yyyy') : '—'}">—</td>
+                            <td>
+                                <span th:if="${p.bloodType}" class="badge badge-cyan" th:text="${p.bloodType}">—</span>
+                                <span th:unless="${p.bloodType}">—</span>
+                            </td>
+                            <td th:text="${p.allergies ?: '—'}">—</td>
+                            <td th:text="${p.phone ?: '—'}">—</td>
+                            <td>
+                                <a th:href="@{/doctor/patients/{id}/records(id=${p.id})}" class="btn btn-ghost btn-sm">📋 Карта</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(patients)}">
+                            <td colspan="6">
+                                <div class="empty-state"><div class="icon">🧑‍⚕️</div><h3>Пациентов нет</h3><p>Пациенты появятся после завершённых приёмов</p></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мед. карта — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-doctor}" th:with="activePage='patients'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1 th:text="${patient.user.fullName}">—</h1>
+                <p>Медицинская карта пациента</p>
+            </div>
+            <a th:href="@{/doctor/patients}" class="btn btn-ghost">← Назад</a>
+        </div>
+        <div class="content">
+            <div th:if="${success}" class="alert alert-success">✓ <span th:text="${success}"></span></div>
+
+            <!-- Patient info -->
+            <div class="card" style="margin-bottom:20px">
+                <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px">Дата рождения</div>
+                        <div style="font-weight:500"
+                             th:text="${patient.dateOfBirth != null ? #temporals.format(patient.dateOfBirth,'dd.MM.yyyy') : '—'}">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px">Группа крови</div>
+                        <div>
+                            <span th:if="${patient.bloodType != null}" class="badge badge-cyan" th:text="${patient.bloodType}">—</span>
+                            <span th:unless="${patient.bloodType != null}">—</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px">Аллергии</div>
+                        <div style="font-weight:500;color:var(--danger)"
+                             th:text="${patient.allergies != null ? patient.allergies : 'Нет'}">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px">Телефон</div>
+                        <div style="font-weight:500" th:text="${patient.phone != null ? patient.phone : '—'}">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="align-items:start">
+
+                <!-- LEFT: medical records + test orders -->
+                <div>
+                    <div class="card" style="margin-bottom:20px">
+                        <div class="card-header"><span class="card-title">📋 История приёмов</span></div>
+                        <div th:if="${#lists.isEmpty(records)}" class="card-body">
+                            <div class="empty-state"><div class="icon">📋</div><h3>Записей нет</h3></div>
+                        </div>
+                        <div th:each="r : ${records}">
+                            <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+                                    <div style="font-weight:600;font-size:14px"
+                                         th:text="${#temporals.format(r.recordDate,'dd.MM.yyyy HH:mm')}">—</div>
+                                    <span class="badge badge-green">Завершён</span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+                                    <div>
+                                        <div style="color:var(--text-muted);margin-bottom:4px">Диагноз</div>
+                                        <div style="font-weight:600"
+                                             th:text="${r.diagnosis != null ? r.diagnosis : '—'}">—</div>
+                                    </div>
+                                    <div>
+                                        <div style="color:var(--text-muted);margin-bottom:4px">Лечение</div>
+                                        <div th:text="${r.treatment != null ? r.treatment : '—'}">—</div>
+                                    </div>
+                                    <div th:if="${r.prescription != null}" style="grid-column:1/-1">
+                                        <div style="color:var(--text-muted);margin-bottom:4px">Рецепт</div>
+                                        <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:12px"
+                                             th:text="${r.prescription}">—</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test orders -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">🧪 Назначенные анализы</span>
+                            <button class="btn btn-primary btn-sm"
+                                    onclick="document.getElementById('testModal').classList.add('open')">
+                                + Назначить
+                            </button>
+                        </div>
+                        <div th:if="${#lists.isEmpty(testOrders)}" class="card-body">
+                            <div class="empty-state"><div class="icon">🧪</div><h3>Анализов не назначено</h3></div>
+                        </div>
+                        <div th:each="o : ${testOrders}">
+                            <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                    <span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)"
+                                          th:text="${'Заказ #' + o.id + ' · ' + #temporals.format(o.orderedAt,'dd.MM.yyyy')}">—</span>
+                                    <span th:switch="${o.status.name()}">
+                                        <span th:case="'PAID'"        class="badge badge-blue">Назначен</span>
+                                        <span th:case="'IN_PROGRESS'" class="badge badge-cyan">Выполняется</span>
+                                        <span th:case="'COMPLETED'"   class="badge badge-green">Готов</span>
+                                        <span th:case="*" class="badge badge-gray" th:text="${o.status}">—</span>
+                                    </span>
+                                </div>
+                                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                                    <span th:each="t : ${o.tests}" class="badge badge-gray" th:text="${t.name}">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: ward assignment -->
+                <div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">🛏️ Палата</span></div>
+                        <div class="card-body">
+                            <div th:if="${activeAssignment != null}"
+                                 style="background:var(--accent-soft);border:1px solid rgba(59,130,246,.3);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+                                <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Текущая палата</div>
+                                <div style="font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace"
+                                     th:text="'№' + ${activeAssignment.ward.number}">—</div>
+                                <div style="font-size:13px;color:var(--text-soft);margin-top:4px"
+                                     th:text="${activeAssignment.ward.department != null ? activeAssignment.ward.department.name : '—'}">—</div>
+                                <div style="font-size:12px;color:var(--text-muted);margin-top:8px"
+                                     th:text="'С ' + ${#temporals.format(activeAssignment.assignedAt,'dd.MM.yyyy')}">—</div>
+                                <div th:if="${activeAssignment.notes != null}"
+                                     style="font-size:12px;color:var(--text-muted);margin-top:4px"
+                                     th:text="${activeAssignment.notes}">—</div>
+                                <form th:action="@{/doctor/patients/{pid}/discharge/{aid}(pid=${patient.id},aid=${activeAssignment.id})}"
+                                      method="post" style="margin-top:14px"
+                                      onsubmit="return confirm('Выписать пациента из палаты?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            style="width:100%;justify-content:center">Выписать из палаты</button>
+                                </form>
+                            </div>
+
+                            <div th:unless="${activeAssignment != null}"
+                                 style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:13px;margin-bottom:16px">
+                                Пациент не помещён в палату
+                            </div>
+
+                            <div style="font-size:13px;font-weight:600;margin-bottom:12px">
+                                <span th:text="${activeAssignment != null ? 'Перевести в другую палату' : 'Поместить в палату'}">—</span>
+                            </div>
+
+                            <form th:action="@{/doctor/patients/{id}/assign-ward(id=${patient.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <div class="form-group" style="margin-bottom:12px">
+                                    <label>Выберите палату</label>
+                                    <select name="wardId" required>
+                                        <option value="">— выберите —</option>
+                                        <th:block th:each="w : ${wards}">
+                                            <option th:value="${w.id}"
+                                                    th:text="${'№' + w.number + ' · ' + (w.department != null ? w.department.name : '—') + ' · ' + w.available + ' своб. из ' + w.capacity}">—</option>
+                                        </th:block>
+                                    </select>
+                                </div>
+
+                                <!-- Capacity bars -->
+                                <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+                                    <div th:each="w : ${wards}"
+                                         style="padding:10px 12px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+                                        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                                            <span style="font-weight:600" th:text="'Палата №' + ${w.number}">—</span>
+                                            <span th:if="${w.available > 0}" class="badge badge-green"
+                                                  th:text="${w.available + ' своб.'}">—</span>
+                                            <span th:unless="${w.available > 0}" class="badge badge-red">Занята</span>
+                                        </div>
+                                        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                                            <div th:if="${w.capacity != null and w.capacity > 0}"
+                                                 th:style="${'width:' + ((w.occupied != null ? w.occupied : 0) * 100 / w.capacity) + '%;height:100%;border-radius:3px;background:var(--accent)'}"></div>
+                                        </div>
+                                        <div style="font-size:11px;color:var(--text-muted);margin-top:4px"
+                                             th:text="${(w.occupied != null ? w.occupied : 0) + ' / ' + (w.capacity != null ? w.capacity : 0) + ' · ' + (w.department != null ? w.department.name : '—')}">—</div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom:14px">
+                                    <label>Примечание</label>
+                                    <input type="text" name="notes" placeholder="Плановая госпитализация...">
+                                </div>
+                                <button type="submit" class="btn btn-primary"
+                                        style="width:100%;justify-content:center">Поместить в палату</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ASSIGN LAB TESTS MODAL -->
+<div class="modal-overlay" id="testModal">
+    <div class="modal" style="width:580px">
+        <button class="modal-close"
+                onclick="document.getElementById('testModal').classList.remove('open')">✕</button>
+        <div class="modal-title">Назначить анализы</div>
+        <form th:action="@{/doctor/lab-tests/order}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="patientId" th:value="${patient.id}"/>
+            <div style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;margin-bottom:16px">
+                <label th:each="t : ${allTests}"
+                       style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer">
+                    <input type="checkbox" name="testIds" th:value="${t.id}"
+                           style="accent-color:var(--accent);width:16px;height:16px">
+                    <div style="flex:1">
+                        <div style="font-weight:500;font-size:14px" th:text="${t.name}">—</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px"
+                             th:text="${t.category + ' · ' + (t.daysToResult != null ? t.daysToResult : 1) + ' дн.'}">—</div>
+                    </div>
+                    <span style="font-weight:700;font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--accent)"
+                          th:text="${#numbers.formatDecimal(t.price,0,'COMMA',0,'POINT') + ' ₸'}">—</span>
+                </label>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('testModal').classList.remove('open')">Отмена</button>
+                <button type="submit" class="btn btn-primary">Назначить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

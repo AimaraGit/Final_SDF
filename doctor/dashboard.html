@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Дашборд — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-doctor}" th:with="activePage='dashboard'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1>Добро пожаловать, <span th:text="${doctor.user.fullName}">—</span> 👨‍⚕️</h1>
+                <p th:text="${doctor.specialization + ' · Кабинет ' + (doctor.cabinet != null ? doctor.cabinet : '—')}">—</p>
+            </div>
+        </div>
+        <div class="content">
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <span class="stat-icon">📅</span>
+                    <div class="stat-value" th:text="${scheduled}">0</div>
+                    <div class="stat-label">Запланировано</div>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-value" th:text="${accepted}">0</div>
+                    <div class="stat-label">Принято</div>
+                </div>
+                <div class="stat-card cyan">
+                    <span class="stat-icon">▶</span>
+                    <div class="stat-value" th:text="${inProgress}">0</div>
+                    <div class="stat-label">На приёме</div>
+                </div>
+                <div class="stat-card orange">
+                    <span class="stat-icon">🏁</span>
+                    <div class="stat-value" th:text="${completed}">0</div>
+                    <div class="stat-label">Завершено</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Последние записи</span>
+                    <a th:href="@{/doctor/appointments}" class="btn btn-ghost btn-sm">Все приёмы →</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>Пациент</th><th>Дата и время</th><th>Причина</th><th>Статус</th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="a : ${recentAppointments}">
+                            <td><strong th:text="${a.patient.user.fullName}">—</strong></td>
+                            <td><span class="time-chip"
+                                      th:text="${#temporals.format(a.appointmentTime,'dd.MM.yyyy HH:mm')}">—</span></td>
+                            <td th:text="${a.reason != null ? a.reason : '—'}">—</td>
+                            <td>
+                                <span th:switch="${a.status.name()}">
+                                    <span th:case="'SCHEDULED'"   class="badge badge-blue">Запланирован</span>
+                                    <span th:case="'ACCEPTED'"    class="badge" style="background:rgba(16,185,129,.15);color:#34d399">Принят</span>
+                                    <span th:case="'IN_PROGRESS'" class="badge badge-cyan">На приёме</span>
+                                    <span th:case="'COMPLETED'"   class="badge badge-green">Завершён</span>
+                                    <span th:case="'CANCELLED'"   class="badge badge-red">Отменён</span>
+                                    <span th:case="'NO_SHOW'"     class="badge badge-gray">Не явился</span>
+                                    <span th:case="*" class="badge badge-gray" th:text="${a.status}">—</span>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentAppointments)}">
+                            <td colspan="4">
+                                <div class="empty-state"><div class="icon">📅</div><h3>Нет приёмов</h3></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
