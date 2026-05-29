@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализы — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-admin}" th:with="activePage='lab-tests'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Каталог анализов</h1><p>Управление видами анализов и исследований</p></div>
+            <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">
+                + Добавить анализ
+            </button>
+        </div>
+        <div class="content">
+            <div th:if="${success}" class="alert alert-success">✓ <span th:text="${success}"></span></div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>Название</th><th>Категория</th><th>Срок результата</th><th>Цена</th><th>Статус</th><th>Действия</th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="t : ${tests}">
+                            <td>
+                                <strong th:text="${t.name}">—</strong>
+                                <div style="font-size:12px;color:var(--text-muted);margin-top:2px" th:text="${t.description}">—</div>
+                            </td>
+                            <td><span class="badge badge-cyan" th:text="${t.category}">—</span></td>
+                            <td th:text="${t.daysToResult != null ? t.daysToResult + ' дн.' : '1 дн.'}">—</td>
+                            <td><strong th:text="${#numbers.formatDecimal(t.price,0,'COMMA',0,'POINT')} + ' ₸'">—</strong></td>
+                            <td>
+                                <span th:if="${t.available}" class="badge badge-green">Доступен</span>
+                                <span th:unless="${t.available}" class="badge badge-red">Недоступен</span>
+                            </td>
+                            <td class="actions">
+                                <form th:action="@{/admin/lab-tests/delete/{id}(id=${t.id})}" method="post"
+                                      onsubmit="return confirm('Удалить анализ?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tests)}">
+                            <td colspan="6">
+                                <div class="empty-state"><div class="icon">🧪</div><h3>Анализов нет</h3></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('open')">✕</button>
+        <div class="modal-title">Добавить анализ</div>
+        <form th:action="@{/admin/lab-tests/save}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1">
+                    <label>Название</label>
+                    <input type="text" name="name" placeholder="Общий анализ крови" required>
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                    <label>Описание</label>
+                    <input type="text" name="description" placeholder="Краткое описание">
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <input type="text" name="category" placeholder="Гематология" required>
+                </div>
+                <div class="form-group">
+                    <label>Срок результата (дней)</label>
+                    <input type="number" name="daysToResult" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Цена (₸)</label>
+                    <input type="number" name="price" min="0" step="100" placeholder="1500" required>
+                </div>
+            </div>
+            <div class="mt-6" style="display:flex;gap:12px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('addModal').classList.remove('open')">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

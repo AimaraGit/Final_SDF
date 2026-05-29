@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head><meta charset="UTF-8"><title>MedSystem</title></head>
+<body>
+<div class="layout">
+
+    <!-- ADMIN SIDEBAR -->
+    <aside class="sidebar" th:fragment="sidebar-admin">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏥</div>
+            <h2>MedSystem</h2>
+            <p>Administrator</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Главное</div>
+                <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
+                    <span class="nav-icon">📊</span> Дашборд
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Управление</div>
+                <a th:href="@{/admin/patients}" class="nav-item" th:classappend="${activePage == 'patients'} ? 'active'">
+                    <span class="nav-icon">🧑‍⚕️</span> Пациенты
+                </a>
+                <a th:href="@{/admin/doctors}" class="nav-item" th:classappend="${activePage == 'doctors'} ? 'active'">
+                    <span class="nav-icon">👨‍⚕️</span> Врачи
+                </a>
+                <a th:href="@{/admin/departments}" class="nav-item" th:classappend="${activePage == 'departments'} ? 'active'">
+                    <span class="nav-icon">🏢</span> Отделения
+                </a>
+                <a th:href="@{/admin/wards}" class="nav-item" th:classappend="${activePage == 'wards'} ? 'active'">
+                    <span class="nav-icon">🛏️</span> Палаты
+                </a>
+                <a th:href="@{/admin/appointments}" class="nav-item" th:classappend="${activePage == 'appointments'} ? 'active'">
+                    <span class="nav-icon">📅</span> Записи
+                </a>
+                <a th:href="@{/admin/lab-tests}" class="nav-item" th:classappend="${activePage == 'lab-tests'} ? 'active'">
+                    <span class="nav-icon">🧪</span> Анализы
+                </a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">А</div>
+                <div class="user-info">
+                    <div class="user-name" sec:authentication="name">Admin</div>
+                    <div class="user-role">Администратор</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="logout-btn" title="Выйти">⏻</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- DOCTOR SIDEBAR -->
+    <aside class="sidebar" th:fragment="sidebar-doctor">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏥</div>
+            <h2>MedSystem</h2>
+            <p>Doctor Portal</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Главное</div>
+                <a th:href="@{/doctor/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
+                    <span class="nav-icon">📊</span> Дашборд
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Работа</div>
+                <a th:href="@{/doctor/appointments}" class="nav-item" th:classappend="${activePage == 'appointments'} ? 'active'">
+                    <span class="nav-icon">📅</span> Приёмы
+                </a>
+                <a th:href="@{/doctor/patients}" class="nav-item" th:classappend="${activePage == 'patients'} ? 'active'">
+                    <span class="nav-icon">🧑‍⚕️</span> Мои пациенты
+                </a>
+                <a th:href="@{/doctor/lab-tests}" class="nav-item" th:classappend="${activePage == 'lab-tests'} ? 'active'">
+                    <span class="nav-icon">🧪</span> Назначить анализы
+                </a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">Д</div>
+                <div class="user-info">
+                    <div class="user-name" sec:authentication="name">Doctor</div>
+                    <div class="user-role">Врач</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="logout-btn" title="Выйти">⏻</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- RECEPTIONIST SIDEBAR -->
+    <aside class="sidebar" th:fragment="sidebar-receptionist">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏥</div>
+            <h2>MedSystem</h2>
+            <p>Reception</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Главное</div>
+                <a th:href="@{/receptionist/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
+                    <span class="nav-icon">📊</span> Дашборд
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Работа</div>
+                <a th:href="@{/receptionist/appointments}" class="nav-item" th:classappend="${activePage == 'appointments'} ? 'active'">
+                    <span class="nav-icon">📅</span> Записи
+                </a>
+                <a th:href="@{/receptionist/patients}" class="nav-item" th:classappend="${activePage == 'patients'} ? 'active'">
+                    <span class="nav-icon">🧑‍⚕️</span> Пациенты
+                </a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">Р</div>
+                <div class="user-info">
+                    <div class="user-name" sec:authentication="name">Reception</div>
+                    <div class="user-role">Регистратор</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="logout-btn" title="Выйти">⏻</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- PATIENT SIDEBAR -->
+    <aside class="sidebar" th:fragment="sidebar-patient">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏥</div>
+            <h2>MedSystem</h2>
+            <p>Patient Portal</p>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Главное</div>
+                <a th:href="@{/patient/dashboard}" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active'">
+                    <span class="nav-icon">🏠</span> Главная
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Мои данные</div>
+                <a th:href="@{/patient/appointments}" class="nav-item" th:classappend="${activePage == 'appointments'} ? 'active'">
+                    <span class="nav-icon">📅</span> Мои записи
+                </a>
+                <a th:href="@{/patient/records}" class="nav-item" th:classappend="${activePage == 'records'} ? 'active'">
+                    <span class="nav-icon">📋</span> Мед. карта
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Анализы</div>
+                <a th:href="@{/patient/tests}" class="nav-item" th:classappend="${activePage == 'tests'} ? 'active'">
+                    <span class="nav-icon">🧪</span> Каталог
+                </a>
+                <a th:href="@{/patient/tests/cart}" class="nav-item" th:classappend="${activePage == 'cart'} ? 'active'">
+                    <span class="nav-icon">🛒</span> Корзина
+                    <span th:if="${cartCount != null and cartCount > 0}"
+                          style="margin-left:auto;background:var(--accent);color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;"
+                          th:text="${cartCount}">0</span>
+                </a>
+                <a th:href="@{/patient/tests/orders}" class="nav-item" th:classappend="${activePage == 'orders'} ? 'active'">
+                    <span class="nav-icon">📦</span> Мои заказы
+                </a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">П</div>
+                <div class="user-info">
+                    <div class="user-name" sec:authentication="name">Patient</div>
+                    <div class="user-role">Пациент</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="logout-btn" title="Выйти">⏻</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+</div>
+</body>
+</html>

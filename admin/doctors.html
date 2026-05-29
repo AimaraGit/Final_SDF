@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Врачи — MedSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments :: sidebar-admin}" th:with="activePage='doctors'"></div>
+    <main class="main">
+        <div class="topbar">
+            <div><h1>Врачи</h1><p>Управление медицинским персоналом</p></div>
+            <button class="btn btn-primary"
+                    onclick="document.getElementById('addModal').classList.add('open')">
+                + Добавить врача
+            </button>
+        </div>
+        <div class="content">
+            <div th:if="${success}" class="alert alert-success">✓ <span th:text="${success}"></span></div>
+            <div th:if="${error}"   class="alert alert-danger">⚠ <span th:text="${error}"></span></div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>ФИО</th><th>Специализация</th><th>Отделение</th>
+                            <th>Кабинет</th><th>Опыт</th><th>Телефон</th><th>Действия</th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="d : ${doctors}">
+                            <td><strong th:text="${d.user.fullName}">—</strong></td>
+                            <td><span class="badge badge-blue" th:text="${d.specialization}">—</span></td>
+                            <td th:text="${d.department != null ? d.department.name : '—'}">—</td>
+                            <td th:text="${d.cabinet != null ? d.cabinet : '—'}">—</td>
+                            <td th:text="${d.experienceYears != null ? d.experienceYears + ' лет' : '—'}">—</td>
+                            <td th:text="${d.phone != null ? d.phone : '—'}">—</td>
+                            <td class="actions">
+                                <form th:action="@{/admin/doctors/delete/{id}(id=${d.id})}" method="post"
+                                      onsubmit="return confirm('Удалить врача?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(doctors)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <div class="icon">👨‍⚕️</div><h3>Врачей нет</h3>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="addModal">
+    <div class="modal" style="width:620px">
+        <button class="modal-close"
+                onclick="document.getElementById('addModal').classList.remove('open')">✕</button>
+        <div class="modal-title">Добавить врача</div>
+        <form th:action="@{/admin/doctors/save}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="form-grid">
+                <div class="form-group"><label>ФИО</label>
+                    <input type="text" name="fullName" placeholder="Иванов Иван Иванович" required></div>
+                <div class="form-group"><label>Логин</label>
+                    <input type="text" name="username" placeholder="doctor_ivanov" required></div>
+                <div class="form-group"><label>Email</label>
+                    <input type="email" name="email" placeholder="ivanov@hospital.kz"></div>
+                <div class="form-group"><label>Пароль</label>
+                    <input type="password" name="password" required></div>
+                <div class="form-group"><label>Специализация</label>
+                    <input type="text" name="specialization" placeholder="Кардиолог" required></div>
+                <div class="form-group"><label>Лицензия</label>
+                    <input type="text" name="licenseNumber" placeholder="KZ-001"></div>
+                <div class="form-group"><label>Телефон</label>
+                    <input type="text" name="phone" placeholder="+7 701 000 0000"></div>
+                <div class="form-group"><label>Кабинет</label>
+                    <input type="text" name="cabinet" placeholder="101"></div>
+                <div class="form-group"><label>Опыт (лет)</label>
+                    <input type="number" name="experienceYears" min="0" max="60"></div>
+                <div class="form-group"><label>Отделение</label>
+                    <select name="departmentId">
+                        <option value="">— выберите —</option>
+                        <option th:each="dep : ${departments}"
+                                th:value="${dep.id}" th:text="${dep.name}">—</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6" style="display:flex;gap:12px;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('addModal').classList.remove('open')">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
